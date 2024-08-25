@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khalil - Tool: Text Counter</title>
+<style>
+@font-face {
+  font-family: 'BB Manual Mono Pro TX';
+  src: url('https://ik.imagekit.io/ybebp19uwa/BBManualMonoProTX-Regular.woff2?updatedAt=1722424863590') format('woff2');
+}
+@font-face {
+font-family: 'BBManualMonoTX';
+src: url('https://ik.imagekit.io/ybebp19uwa/BBManualMonoProTX-SemiBold.woff2?updatedAt=1722452612640') format('woff2');
+}
+
+body
+{font-family: 'BB Manual Mono Pro TX',arial;padding: 20px;margin: 0;box-sizing: border-box;background:#ddd;}
+
+.container
+{display: flex;flex-direction: column;align-items: center;}
+
+#textInput
+{width: 100%;max-width: 100%;height: 200px;margin-bottom: 20px;font-family:'BB Manual Mono Pro TX',arial;font-size:1rem;line-height:1.5;background:#ddd;}
+
+.controls
+{display: flex;justify-content: space-between;width: 100%;max-width: 600px;margin-bottom: 20px;}
+
+.controls button
+{border-radius:5px;width:90px;background:none;font-family:'BBManualMonoTX','BB Manual Mono Pro TX',arial;font-size:1rem;border:1px solid black;padding:10px;text-transform:uppercase;}
+
+.counts
+{align-self: flex-start;border-bottom:1px solid black;width:100%;}
+.bold_font
+{font-family:'BBManualMonoTX','BB Manual Mono Pro TX',arial;font-weight:300;}
+.tit
+{position:fixed;top:0;left:50%;transform:translatex(-50%);font-size:1.5rem;padding-top:50px;}
+.bt_f
+{position:fixed;bottom:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:row;gap:80px;color:#fff;justify-content:center;align-items:center;margin:0 auto;padding:0;}
+.bt_f a
+{COLOR:#000;width:100%;text-decoration:none;font-size:1rem;padding-bottom:15px;}
+.book-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+width: 98%;
+margin:0 auto;
+padding: 0;
+cursor: pointer;
+padding-top:20px;
+}
+.content {
+align-items: left;
+margin:0 auto;
+width:98%;
+display: none;
+padding:0;
+}
+.arrow {
+font-size: 20px;
+}
+.title {
+text-transform:uppercase;
+}
+.content p {
+    padding:0;
+    margin:0;
+line-height:1.5;
+color:black;
+font-size:12px;
+padding-top:10px;
+text-align:left;
+text-transform:uppercase;
+}
+li {text-transform:uppercase;font-size:12px;}
+ul {padding:0;}
+}
+.open-font .title,
+.open-font .arrow {
+  font-family: 'BBManualMonoTX','BB Manual Mono Pro TX', Arial;
+}
+</style>
+</head>
+<body>
+
+<div class="tit bold_font">
+TEXT&nbsp;COUNTER
+</div>
+<div class="container"><br><br><br><br><br>
+    <textarea id="textInput" placeholder="Type/paste your text here..." oninput="updateCounts()"></textarea>
+    <div class="controls">
+        <button id="clearBtn" onclick="clearText()">Clear</button>
+        <button id="undoBtn" onclick="undo()">Undo</button>
+        <button id="redoBtn" onclick="redo()">Redo</button>
+    </div>
+    <div class="counts">
+        <p>CHARACTERS: <span class="bold_font" id="charCount">0</span></p>
+        <p>WORDS: <span class="bold_font" id="wordCount">0</span></p>
+    </div>
+</div>
+
+<div class="book-row">
+<div class="title">INFO</div>
+<div class="arrow">+</div>
+</div>
+<div class="content">
+<p>
+Text Counter Tool:<br>
+A simple, responsive tool for counting characters and words in real-time. It features clear, undo, and redo functions to manage your text efficiently. Perfect for ensuring your content meets specific length requirements.<br>
+Key Terms:<br>
+<ul>
+<li>
+<span style="font-weight:600;">
+Character Count:</span> Total number of characters, including spaces.
+</li></ul>
+<ul><li>
+<span style="font-weight:600;">
+Word Count:</span> Total number of words.
+</li></ul>
+<ul><li>
+<span style="font-weight:600;">
+Undo/Redo:</span> Reverse or reapply your last action.
+</li></ul>
+</p>
+</div>
+
+<div class="bt_f">
+<a onclick="goBack()">
+GO&nbsp;BACK
+</a>
+<a href="https://dash.khaliiil.com/">
+DASH
+</a>
+<a href="https://khaliiil.com/terms-conditions/">
+TERMS
+</a>
+</div>
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll('.book-row');
+        
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                // Close any open content
+                const openContent = document.querySelector('.content.open');
+                if (openContent && openContent !== this.nextElementSibling) {
+                    openContent.previousElementSibling.querySelector('.arrow').textContent = '+';
+                    openContent.classList.remove('open');
+                    openContent.style.display = 'none';
+                    openContent.previousElementSibling.classList.remove('open-font'); // Remove the font class from the previously opened row
+                }
+                
+                // Toggle current content
+                const content = this.nextElementSibling;
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    this.querySelector('.arrow').textContent = '+';
+                    this.classList.remove('open-font'); // Remove the font class if the content is closed
+                } else {
+                    content.style.display = 'block';
+                    content.classList.add('open');
+                    this.querySelector('.arrow').textContent = '-';
+                    this.classList.add('open-font'); // Add the font class if the content is opened
+                }
+            });
+        });
+    });
+</script>
+<script>
+let textInput = document.getElementById('textInput');
+let charCount = document.getElementById('charCount');
+let wordCount = document.getElementById('wordCount');
+
+let history = [];
+let historyIndex = -1;
+
+function updateCounts() {
+    let text = textInput.value;
+    charCount.textContent = text.length;
+    wordCount.textContent = text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function clearText() {
+    saveHistory();  // Save the current state before clearing
+    textInput.value = '';
+    updateCounts();
+    saveHistory();  // Save the cleared state
+}
+
+function saveHistory() {
+    // Avoid saving duplicate states
+    if (historyIndex < history.length - 1) {
+        history = history.slice(0, historyIndex + 1);
+    }
+    if (historyIndex === -1 || textInput.value !== history[historyIndex]) {
+        history.push(textInput.value);
+        historyIndex++;
+    }
+    updateUndoRedoButtons();
+}
+
+function undo() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        textInput.value = history[historyIndex];
+        updateCounts();
+        updateUndoRedoButtons();
+    }
+}
+
+function redo() {
+    if (historyIndex < history.length - 1) {
+        historyIndex++;
+        textInput.value = history[historyIndex];
+        updateCounts();
+        updateUndoRedoButtons();
+    }
+}
+
+function onTextInput() {
+    saveHistory(); // Save history on every input change
+    updateCounts();
+}
+
+function updateUndoRedoButtons() {
+    document.getElementById('undoBtn').disabled = historyIndex <= 0;
+    document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+}
+
+// Initialize
+updateUndoRedoButtons();
+textInput.addEventListener('input', onTextInput); // Ensure this function is called on every input change
+</script>
+</body>
+</html>

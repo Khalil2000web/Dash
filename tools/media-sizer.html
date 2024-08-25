@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khalil - Tool: Media Sizer</title>
+<style>
+@font-face {font-family: 'BB Manual Mono Pro TX';src: url('https://ik.imagekit.io/ybebp19uwa/BBManualMonoProTX-Regular.woff2?updatedAt=1722424863590') format('woff2');}
+@font-face {font-family: 'BBManualMonoTX';src: url('https://ik.imagekit.io/ybebp19uwa/BBManualMonoProTX-SemiBold.woff2?updatedAt=1722452612640') format('woff2');}
+body {font-family:'BB Manual Mono Pro TX', Arial;padding: 20px;font-weight:300;background:#ddd;}
+.tit{position:fixed;top:0;left:50%;width:100%;transform:translatex(-50%);font-size:1.5rem;padding-top:50px;font-family:'BBManualMonoTX','BB Manual Mono Pro TX',arial;font-weight:300;text-transform:uppercase;text-align:center;}
+.media-container {margin-bottom: 20px;margin-top:90px;} 
+#mediaPreview {max-width: 100%;height: auto;display: block;margin-bottom: 10px;}
+.options-container button {padding: 10px;margin-right: 10px;border: 1px solid #000;background:none;cursor: pointer;color:#000;font-family:'BBManualMonoTX','BB Manual Mono Pro TX',arial;text-transform:uppercase;}
+.options-container button.selected {background: #000;color: white;}
+.result {margin-top: 20px;display: none;}
+.result p {color:#000;font-weight:300;font-family:'BBManualMonoTX','BB Manual Mono Pro TX',arial;font-size:1.4rem;}
+</style>
+</head>
+<body>
+<div class="tit">
+Media Size Calculator
+</div>
+
+<div class="media-container">
+<span>CHOOSE FILE: </span><input type="file" id="mediaInput" accept="image/*,video/*">
+<img id="mediaPreview" src="#" alt="Media Preview" style="display:none;">
+<video id="videoPreview" controls style="display:none;">
+<source src="#" type="video/mp4">
+</video>
+</div>
+
+<div class="options-container">
+  <button class="option-btn" data-unit="px">Pixels (px)</button>
+  <button class="option-btn" data-unit="em">Ems (em)</button>
+  <button class="option-btn" data-unit="rem">Rems (rem)</button>
+  <button class="option-btn" data-unit="vw">Viewport Width (vw)</button>
+  <button class="option-btn" data-unit="vh">Viewport Height (vh)</button>
+</div>
+
+<div class="result">
+<p>Calculated Sizes:</p>
+  <div id="sizeResults"></div>
+</div>
+
+<script>
+const mediaInput = document.getElementById('mediaInput');
+const mediaPreview = document.getElementById('mediaPreview');
+const videoPreview = document.getElementById('videoPreview');
+const optionButtons = document.querySelectorAll('.option-btn');
+const sizeResults = document.getElementById('sizeResults');
+const resultContainer = document.querySelector('.result');
+
+let selectedUnits = new Set();
+
+mediaInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    if (file.type.startsWith('image/')) {
+        mediaPreview.src = url;
+        mediaPreview.style.display = 'block';
+        videoPreview.style.display = 'none';
+    } else if (file.type.startsWith('video/')) {
+        videoPreview.src = url;
+        videoPreview.style.display = 'block';
+        mediaPreview.style.display = 'none';
+    }
+
+    calculateSize();
+});
+
+optionButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        const unit = this.dataset.unit;
+        if (selectedUnits.has(unit)) {
+            selectedUnits.delete(unit);
+            this.classList.remove('selected');
+        } else {
+            selectedUnits.add(unit);
+            this.classList.add('selected');
+        }
+        calculateSize();
+    });
+});
+
+function calculateSize() {
+    const mediaElement = mediaPreview.style.display === 'block' ? mediaPreview : videoPreview;
+    if (!mediaElement.src) return;
+
+    let width, height;
+
+    if (mediaElement.tagName === 'IMG') {
+        // For images, get the natural width and height
+        width = mediaElement.naturalWidth;
+        height = mediaElement.naturalHeight;
+    } else if (mediaElement.tagName === 'VIDEO') {
+        // For videos, get the video width and height
+        width = mediaElement.videoWidth;
+        height = mediaElement.videoHeight;
+    }
+
+    sizeResults.innerHTML = '';
+    selectedUnits.forEach(unit => {
+        let widthResult, heightResult;
+
+        switch (unit) {
+            case 'px':
+                widthResult = width + 'px';
+                heightResult = height + 'px';
+                break;
+            case 'em':
+                widthResult = (width / 16).toFixed(2) + 'em';
+                heightResult = (height / 16).toFixed(2) + 'em';
+                break;
+            case 'rem':
+                widthResult = (width / 16).toFixed(2) + 'rem';
+                heightResult = (height / 16).toFixed(2) + 'rem';
+                break;
+            case 'vw':
+                widthResult = ((width / window.innerWidth) * 100).toFixed(2) + 'vw';
+                heightResult = ((height / window.innerHeight) * 100).toFixed(2) + 'vw';
+                break;
+            case 'vh':
+                widthResult = ((height / window.innerHeight) * 100).toFixed(2) + 'vh';
+                heightResult = ((height / window.innerHeight) * 100).toFixed(2) + 'vh';
+                break;
+            default:
+                widthResult = width + 'px';
+                heightResult = height + 'px';
+                break;
+        }
+
+        sizeResults.innerHTML += `<p><strong>${unit.toUpperCase()}:</strong> Width: ${widthResult}, Height: ${heightResult}</p>`;
+    });
+
+    resultContainer.style.display = selectedUnits.size ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
